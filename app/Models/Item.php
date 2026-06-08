@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Item extends Model
 {
@@ -42,5 +44,31 @@ class Item extends Model
     public function getIsLowStockAttribute(): bool
     {
         return $this->stock <= $this->minimum_stock;
+    }
+
+    /**
+     * Scope filter untuk pencarian dan filter kategori/lokasi
+     */
+    public function scopeFilter(
+        Builder $query,
+        ?string $search,
+        ?string $categoryId,
+        ?string $locationId,
+    ): Builder {
+        return $query
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where("name", "like", "%{$search}%")->orWhere(
+                        "code",
+                        "like",
+                        "%{$search}%",
+                    );
+                });
+            })
+            ->when($categoryId, fn($q) => $q->where("category_id", $categoryId))
+            ->when(
+                $locationId,
+                fn($q) => $q->where("location_id", $locationId),
+            );
     }
 }

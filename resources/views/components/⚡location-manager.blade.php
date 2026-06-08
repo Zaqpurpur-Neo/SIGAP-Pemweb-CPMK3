@@ -1,7 +1,7 @@
 <?php
-
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 use App\Models\Location;
 
 new class extends Component {
@@ -54,9 +54,10 @@ new class extends Component {
         ];
     }
 
-    public function render()
+    #[Computed]
+    public function locations()
     {
-        $locations = Location::withCount("items")
+        return Location::withCount("items")
             ->where(function ($q) {
                 $q->where("name", "like", "%{$this->search}%")->orWhere(
                     "code",
@@ -66,8 +67,6 @@ new class extends Component {
             })
             ->orderBy("name")
             ->paginate(10);
-
-        return view("livewire.location-manager", compact("locations"));
     }
 
     public function updatingSearch(): void
@@ -200,10 +199,10 @@ new class extends Component {
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse ($locations as $index => $location)
+                    @forelse ($this->locations as $index => $location)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $locations->firstItem() + $index }}
+                                {{ $this->locations->firstItem() + $index }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {{ $location->name }}
@@ -254,9 +253,9 @@ new class extends Component {
         </div>
 
         {{-- Pagination --}}
-        @if ($locations->hasPages())
+        @if ($this->locations->hasPages())
             <div class="px-6 py-3 border-t border-gray-200">
-                {{ $locations->links() }}
+                {{ $this->locations->links() }}
             </div>
         @endif
     </div>

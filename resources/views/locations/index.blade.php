@@ -1,8 +1,8 @@
-{{-- resources/views/categories/index.blade.php --}}
+{{-- resources/views/locations/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Kategori')
+@section('title', 'Lokasi')
 
 @section('content')
-    @livewire('category-manager')
+    @livewire('location-manager')
 @endsection

@@ -1,7 +1,7 @@
 <?php
-
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 use App\Models\Category;
 
 new class extends Component {
@@ -36,14 +36,13 @@ new class extends Component {
         ];
     }
 
-    public function render()
+    #[Computed]
+    public function categories()
     {
-        $categories = Category::withCount("items")
+        return Category::withCount("items")
             ->where("name", "like", "%{$this->search}%")
             ->orderBy("name")
             ->paginate(10);
-
-        return view("livewire.category-manager", compact("categories"));
     }
 
     public function updatingSearch(): void
@@ -172,10 +171,10 @@ new class extends Component {
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse ($categories as $index => $category)
+                    @forelse ($this->categories as $index => $category)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $categories->firstItem() + $index }}
+                                {{ $this->categories->firstItem() + $index }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {{ $category->name }}
@@ -221,9 +220,9 @@ new class extends Component {
         </div>
 
         {{-- Pagination --}}
-        @if ($categories->hasPages())
+        @if ($this->categories->hasPages())
             <div class="px-6 py-3 border-t border-gray-200">
-                {{ $categories->links() }}
+                {{ $this->categories->links() }}
             </div>
         @endif
     </div>
