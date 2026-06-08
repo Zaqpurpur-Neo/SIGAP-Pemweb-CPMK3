@@ -4,6 +4,9 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use App\Models\{Mutation, Category};
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MutationExport;
+
 new class extends Component {
     use WithPagination;
 
@@ -68,6 +71,28 @@ new class extends Component {
     {
         $this->resetPage();
     }
+
+    public function export(): void
+    {
+        // Build query string dari filter yang aktif
+        $params = [];
+
+        if ($this->dateFrom) {
+            $params["date_from"] = $this->dateFrom;
+        }
+        if ($this->dateTo) {
+            $params["date_to"] = $this->dateTo;
+        }
+        if ($this->filterCategory) {
+            $params["category"] = $this->filterCategory;
+        }
+        if ($this->filterType) {
+            $params["type"] = $this->filterType;
+        }
+
+        // Redirect ke route export dengan query parameters
+        $this->redirect(route("reports.export", $params));
+    }
 };
 ?>
 
@@ -93,13 +118,33 @@ new class extends Component {
             </select>
             <div class="flex gap-2">
                 <select wire:model.live="filterType"
-                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        class="block w-full px-3 py-2 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white">
                     <option value="">Semua Tipe</option>
                     <option value="in">Masuk</option>
                     <option value="out">Keluar</option>
                 </select>
+
+                {{-- TOMBOL EXPORT BARU --}}
+                <button wire:click="export"
+                        wire:loading.attr="disabled"
+                        class="px-3 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap">
+                    <span wire:loading.remove wire:target="export">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export Excel
+                    </span>
+                    <span wire:loading wire:target="export">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating...
+                    </span>
+                </button>
+
                 <button wire:click="resetFilter"
-                        class="px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        class="px-3 py-2 text-sm text-gray-700 border border-slate-400 rounded-lg hover:bg-gray-50 bg-white">
                     Reset
                 </button>
             </div>
