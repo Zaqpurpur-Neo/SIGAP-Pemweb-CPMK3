@@ -43,7 +43,7 @@ new class extends Component {
             ->orderBy("name")
             ->paginate(10);
 
-        return view("component.category-manager", compact("categories"));
+        return view("livewire.category-manager", compact("categories"));
     }
 
     public function updatingSearch(): void
@@ -57,8 +57,9 @@ new class extends Component {
         $this->showModal = true;
     }
 
-    public function openEdit(Category $category): void
+    public function openEdit(int $id): void
     {
+        $category = Category::findOrFail($id);
         $this->editingId = $category->id;
         $this->name = $category->name;
         $this->description = $category->description ?? "";
@@ -94,8 +95,10 @@ new class extends Component {
         $this->reset(["name", "description", "editingId", "showModal"]);
     }
 
-    public function delete(Category $category): void
+    public function delete(int $id): void
     {
+        $category = Category::withCount("items")->findOrFail($id);
+
         if ($category->items_count > 0) {
             $this->dispatch(
                 "notify",

@@ -16,13 +16,23 @@ new class extends Component {
 
     public function rules(): array
     {
-        $uniqueRule = $this->editingId
+        $uniqueNameRule = $this->editingId
+            ? "unique:locations,name,{$this->editingId}"
+            : "unique:locations,name";
+
+        $uniqueCodeRule = $this->editingId
             ? "unique:locations,code,{$this->editingId}"
             : "unique:locations,code";
 
         return [
-            "name" => ["required", "min:2", "max:100"],
-            "code" => ["required", "min:2", "max:10", $uniqueRule],
+            "name" => ["required", "min:2", "max:100", $uniqueNameRule],
+            "code" => [
+                "required",
+                "min:2",
+                "max:10",
+                "alpha_num",
+                $uniqueCodeRule,
+            ],
             "description" => ["nullable", "max:500"],
         ];
     }
@@ -33,9 +43,12 @@ new class extends Component {
             "name.required" => "Nama lokasi wajib diisi.",
             "name.min" => "Nama lokasi minimal 2 karakter.",
             "name.max" => "Nama lokasi maksimal 100 karakter.",
+            "name.unique" => "Nama lokasi sudah digunakan.",
             "code.required" => "Kode lokasi wajib diisi.",
             "code.min" => "Kode lokasi minimal 2 karakter.",
             "code.max" => "Kode lokasi maksimal 10 karakter.",
+            "code.alpha_num" =>
+                "Kode lokasi hanya boleh berisi huruf dan angka.",
             "code.unique" => "Kode lokasi sudah digunakan.",
             "description.max" => "Deskripsi maksimal 500 karakter.",
         ];
@@ -54,7 +67,7 @@ new class extends Component {
             ->orderBy("name")
             ->paginate(10);
 
-        return view("component.location-manager", compact("locations"));
+        return view("livewire.location-manager", compact("locations"));
     }
 
     public function updatingSearch(): void
@@ -68,8 +81,9 @@ new class extends Component {
         $this->showModal = true;
     }
 
-    public function openEdit(Location $location): void
+    public function openEdit(int $id): void
     {
+        $location = Location::findOrFail($id);
         $this->editingId = $location->id;
         $this->name = $location->name;
         $this->code = $location->code;
@@ -108,8 +122,10 @@ new class extends Component {
         $this->reset(["name", "code", "description", "editingId", "showModal"]);
     }
 
-    public function delete(Location $location): void
+    public function delete(int $id): void
     {
+        $location = Location::withCount("items")->findOrFail($id);
+
         if ($location->items_count > 0) {
             $this->dispatch(
                 "notify",
@@ -280,12 +296,12 @@ new class extends Component {
                                 {{-- Code --}}
                                 <div>
                                     <label for="code" class="block text-sm font-medium text-gray-700 mb-1">
-                                        Kode <span class="text-red-500">*</span>
+                                        Kode Lokasi <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text"
                                            id="code"
                                            wire:model.live="code"
-                                           placeholder="Contoh: LKA"
+                                           placeholder="contoh: LKA"
                                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('code') border-red-500 @enderror">
                                     @error('code')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
