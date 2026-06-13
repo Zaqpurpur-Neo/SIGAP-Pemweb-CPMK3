@@ -224,5 +224,4 @@ Folder `vendor/` dan `node_modules/` tidak di-commit. Gunakan `.env.example` seb
 
 ## Demo dan Repository
 
-YouTube Demo: [link]  
-GitHub Repository: [link]
+YouTube Demo: [link](https://youtu.be/hUXALpnbbLs)
